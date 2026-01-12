@@ -10,6 +10,7 @@
 
 #include "fsl_common.h"
 #include "fsl_sccb.h"
+#include "fsl_camera_device.h"
 
 /*
  * Change log:

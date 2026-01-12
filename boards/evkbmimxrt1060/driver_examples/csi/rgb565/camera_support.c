@@ -9,6 +9,7 @@
 #include "fsl_gpio.h"
 #include "fsl_csi.h"
 #include "fsl_csi_camera_adapter.h"
+#include "fsl_ov5640.h"
 #include "fsl_ov7725.h"
 #include "fsl_mt9m114.h"
 #include "fsl_iomuxc.h"
@@ -21,7 +22,7 @@
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-#if (DEMO_CAMERA == DEMO_CAMERA_OV7725)
+#if (DEMO_CAMERA == DEMO_CAMERA_OV7725) || (DEMO_CAMERA == DEMO_CAMERA_OV5640)
 static void BOARD_PullCameraPowerDownPin(bool pullUp);
 #endif
 static void BOARD_PullCameraResetPin(bool pullUp);
@@ -58,6 +59,20 @@ camera_device_handle_t cameraDevice = {
     .ops      = &ov7725_ops,
 };
 
+#elif (DEMO_CAMERA == DEMO_CAMERA_OV5640)
+
+static ov5640_resource_t ov5640Resource = {
+    .i2cSendFunc       = BOARD_Camera_I2C_SendSCCB,
+    .i2cReceiveFunc    = BOARD_Camera_I2C_ReceiveSCCB,
+    .pullResetPin      = BOARD_PullCameraResetPin,
+    .pullPowerDownPin  = BOARD_PullCameraPowerDownPin,
+};
+
+camera_device_handle_t cameraDevice = {
+    .resource = &ov5640Resource,
+    .ops      = &ov5640_ops,
+};
+
 #else
 
 static mt9m114_resource_t mt9m114Resource = {
@@ -91,7 +106,7 @@ static void BOARD_PullCameraResetPin(bool pullUp)
     return;
 }
 
-#if (DEMO_CAMERA == DEMO_CAMERA_OV7725)
+#if (DEMO_CAMERA == DEMO_CAMERA_OV7725) || (DEMO_CAMERA == DEMO_CAMERA_OV5640)
 static void BOARD_PullCameraPowerDownPin(bool pullUp)
 {
     if (pullUp)
@@ -170,7 +185,7 @@ static void BOARD_I2C_ReleaseBus(void)
 
 void BOARD_EarlyPrepareCamera(void)
 {
-#if (DEMO_CAMERA != DEMO_CAMERA_OV7725)
+#if (DEMO_CAMERA != DEMO_CAMERA_OV7725) && (DEMO_CAMERA != DEMO_CAMERA_OV5640)
     BOARD_I2C_ReleaseBus();
 #endif
 }
